@@ -7,7 +7,7 @@ repository = "https://thunderstore.io"
 [package]
 namespace = "GlitchApotamus"
 name = "DiscordHook"
-description = "Sends a discord webhook on certain game events."
+description = "Sends a discord webhook on certain game events. In the furture, this will be expanded to include more events such as serving details per level."
 websiteUrl = "https://github.com/GlitchApotamus/DiscordHook/"
 containsNsfwContent = false
 [package.dependencies]
@@ -33,4 +33,4 @@ target = "CHANGELOG.md"
 [publish]
 communities = [ "repo" ]
 [publish.categories]
-repo = [ "mods", "misc", "serverside" ]
+repo = [ "mods", "misc", "serverside", "clientside" ]
