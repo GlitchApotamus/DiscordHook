@@ -27,7 +27,7 @@ If you use RepoConfig mod to set these settings in game, you will only see `Send
 
 ## Any Problems?
 
-**If you need help or it doesn't work the right way, feel free to contact me in the [R.E.P.O. Modding Discord](https://discord.com/channels/1344557689979670578/1352364577022541926) or create an issue on [GitHub](https://github.com/GlitchApotamus/DiscordHook/issues).**
+**If you need help or it doesn't work the right way, feel free to contact me in the [R.E.P.O. Modding Discord](https://discord.com/channels/1344557689979670578/1360386549996458227) or create an issue on [GitHub](https://github.com/GlitchApotamus/DiscordHook/issues).**
 
 # Credits
 
