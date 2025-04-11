@@ -7,6 +7,10 @@
 This mod sends webhooks to discord during certain events and calls in game. If you want more features, just open an issue or see my channel in the Discord below.\
 If you like my mod, I would very appreciate if u leave a like 💜
 
+## Prerequisites
+
+
+
 ## Configuration
 
 Set up the config file. You can choose to send the messages as an embed by ticking `Send as embed`, setting it to true (default is false).
