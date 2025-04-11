@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx.Configuration;
 using HarmonyLib;
+using UnityEngine;
 
-namespace DiscordHook;
+namespace DiscordHook.Utils;
 
 class DiscordHookConfig
 {
@@ -11,7 +12,7 @@ class DiscordHookConfig
     public readonly ConfigEntry<string> WebhookUrl;
     public readonly ConfigEntry<string> WebhookUsername;
     public readonly ConfigEntry<string> WebhookAvatarUrl;
-    public readonly ConfigEntry<string> WebhookBannerUrl;
+    public readonly ConfigEntry<string> WebhookImageUrl;
     public DiscordHookConfig(ConfigFile cfg)
     {
         cfg.SaveOnConfigSet = false;
@@ -44,11 +45,11 @@ class DiscordHookConfig
             new ConfigDescription("The avatar URL that will be displayed when the webhook sends a message. Don't want an image? Just leave it blank and discord will give a random default.")
         );
 
-        WebhookBannerUrl = cfg.Bind(
+        WebhookImageUrl = cfg.Bind(
             "Settings",
-            "WebhookBannerUrl",
+            "WebhookImageUrl",
             "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/3241660/extras/00_title_repo.png?t=1740578354",
-            new ConfigDescription("The banner URL that will be displayed when the webhook sends a message. Don't want an image? Just leave it blank.")
+            new ConfigDescription("The image URL that will be displayed when the webhook sends a message. Don't want an image? Just leave it blank.")
         );
         ClearOrphanedEntries(cfg);
         cfg.Save();

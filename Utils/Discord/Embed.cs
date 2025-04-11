@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
+namespace DiscordHook.Utils.Discord;
 public class DiscordEmbed
 {
     [JsonProperty("title")]

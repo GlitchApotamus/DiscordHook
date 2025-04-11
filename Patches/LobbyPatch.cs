@@ -1,160 +1,149 @@
-using System;
+using DiscordHook.Utils.Discord;
 using HarmonyLib;
 using Steamworks;
 using Steamworks.Data;
 
-namespace DiscordHook
+namespace DiscordHook.Patches;
+
+[HarmonyPatch(typeof(SteamManager))]
+public class SteamManagerPatches
 {
-    public static class LobbyPatchTypesHolder
+    private static Lobby currentLobby;
+    private static bool lobbyClosed = false;
+    private static bool awakeCalled = false;
+    private static string GetLobbyLink(SteamId lobbyId, SteamId ownerId)
     {
-        public static Type[] LobbyPatches = new Type[]
-        {
-            typeof(OnLobbyLocked),
-            typeof(OnLobbyJoined),
-            typeof(OnLobbyLeft),
-            typeof(OnLobbyUnlocked),
-            typeof(OnDestroy),
-            typeof(OnLeaveLobby),
-            typeof(OnJoinLobby),
-            typeof(OnHostLobby)
-        };
+        var gameId = SteamClient.AppId;
+        return $"https://steamuri.com/joinlobby/{gameId}/{lobbyId}/{ownerId}";
     }
 
-    public static class SharedData
+
+    [HarmonyPostfix]
+    [HarmonyPatch("Awake")]
+    public static void OnAwake()
     {
-        public static int currentLevelNumber = RunManager.instance.levelsCompleted;
-        public static Lobby lobby = SteamManager.instance.currentLobby;
-        public static Friend owner = lobby.Owner;
-        public static bool lobbyClosed = false;
-        public static string GetLobbyLink()
+        currentLobby = SteamManager.instance.currentLobby;
+        if (!awakeCalled)
         {
-            var userId = SteamClient.SteamId;
-            var gameId = SteamClient.AppId;
-            return $"https://linkoid.github.io/steamuri/joinlobby/{gameId}/{lobby.Id}/{userId}";
-
-        }
-
-    }
-
-    [HarmonyPatch(typeof(SteamManager), "LockLobby")]
-    public class OnLobbyLocked
-    {
-        private static void Postfix()
-        {
-            DiscordHook.Logger.LogInfo("Lobby is now locked");
-            DiscordHook.Instance.PostDiscordMessage(message: $"The lobby is now locked.", embed: new DiscordEmbed
-            {
-                Description = "The lobby is now locked.",
-                Color = 16711680,
-            });
-        }
-    }
-
-    [HarmonyPatch(typeof(SteamManager), "UnlockLobby")]
-    public class OnLobbyUnlocked
-    {
-        private static void Postfix()
-        {
-            DiscordHook.Instance.PostDiscordMessage(message: $"[{SharedData.owner.Name}'s Lobby]({SharedData.GetLobbyLink()}) is now open. We will be moving to level number {SharedData.currentLevelNumber + 1}!",
+            new DiscordMessage().PostDiscordMessage(message: $"{SteamClient.Name} has started playing REPO!",
                 embed: new DiscordEmbed
                 {
-                    Description = $"[{SharedData.owner.Name}'s Lobby]({SharedData.GetLobbyLink()}) is now open. We will be moving to level number {SharedData.currentLevelNumber + 1}!",
+                    Description = $"{SteamClient.Name} has started playing REPO!",
                     Color = 65280,
                 });
+            awakeCalled = true;
         }
     }
 
-    [HarmonyPatch(typeof(SteamManager), "OnLobbyMemberJoined")]
-    public class OnLobbyJoined
+    [HarmonyPostfix]
+    [HarmonyPatch("LockLobby")]
+    public static void OnLobbyLocked()
     {
-        private static void Postfix(Lobby _lobby, Friend _friend)
+        new DiscordMessage().PostDiscordMessage(message: $"The lobby is now locked.", embed: new DiscordEmbed
         {
-            DiscordHook.Instance.PostDiscordMessage(message: $"{_friend.Name} has joined their lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}", embed: new DiscordEmbed
+            Description = "The lobby is now locked.",
+            Color = 16711680,
+        });
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("UnlockLobby")]
+    public static void OnLobbyUnlocked()
+    {
+        var owner = currentLobby.Owner;
+        int currentLevelNumber = RunManager.instance.levelsCompleted;
+        new DiscordMessage().PostDiscordMessage(message: $"[{owner.Name}'s Lobby]({GetLobbyLink(currentLobby.Id, owner.Id)}) is now open. We will be moving to level number {currentLevelNumber + 1}!",
+            embed: new DiscordEmbed
             {
-                Description = $"{_friend.Name} has joined their lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}",
+                Description = $"[{owner.Name}'s Lobby]({GetLobbyLink(currentLobby.Id, owner.Id)}) is now open. We will be moving to level number {currentLevelNumber + 1}!",
                 Color = 65280,
             });
-        }
     }
 
-    [HarmonyPatch(typeof(SteamManager), "OnLobbyMemberLeft")]
-    public class OnLobbyLeft
+    [HarmonyPostfix]
+    [HarmonyPatch("OnLobbyMemberJoined")]
+    public static void OnLobbyJoined(Lobby _lobby, Friend _friend)
     {
-        private static void Postfix(Lobby _lobby, Friend _friend)
+        if (_friend.Name == _lobby.Owner.Name) return;
+        new DiscordMessage().PostDiscordMessage(message: $"{_friend.Name} has joined {_lobby.Owner.Name}'s lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}", embed: new DiscordEmbed
         {
-            DiscordHook.Instance.PostDiscordMessage(message: $"{_friend.Name} has left {SharedData.owner.Name}'s Lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}", embed: new DiscordEmbed
+            Description = $"{_friend.Name} has joined {_lobby.Owner.Name}'s lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}",
+            Color = 65280,
+        });
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("OnLobbyMemberLeft")]
+    public static void OnLobbyLeft(Lobby _lobby, Friend _friend)
+    {
+        if (_friend.Name == _lobby.Owner.Name) return;
+        new DiscordMessage().PostDiscordMessage(message: $"{_friend.Name} has left {_lobby.Owner.Name}'s Lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}", embed: new DiscordEmbed
+        {
+            Description = $"{_friend.Name} has left {_lobby.Owner.Name}'s Lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}",
+            Color = 16711680,
+        });
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("OnDestroy")]
+    public static void OnDestroy()
+    {
+        int currentLevelNumber = RunManager.instance.levelsCompleted;
+        if (currentLevelNumber == 0) return;
+        if (!lobbyClosed)
+        {
+            new DiscordMessage().PostDiscordMessage(message: "The Lobby has taken a wild turn into CrashMania!", embed: new DiscordEmbed
             {
-                Description = $"{_friend.Name} has left {SharedData.owner.Name}'s Lobby. Lobby count: {_lobby.MemberCount}/{_lobby.MaxMembers}",
+                Description = "The Lobby has taken a wild turn into CrashMania!",
                 Color = 16711680,
             });
-
         }
     }
 
-    [HarmonyPatch(typeof(SteamManager), "OnDestroy")]
-    public class OnDestroy
+    [HarmonyPostfix]
+    [HarmonyPatch("LeaveLobby")]
+    public static void OnLeaveLobby()
     {
-        private static void Postfix()
+        var lobby = SteamManager.instance.currentLobby;
+        var owner = lobby.Owner;
+        if (SteamClient.Name == owner.Name)
         {
-            if (SharedData.currentLevelNumber == 0) return;
-            if (!SharedData.lobbyClosed)
+            new DiscordMessage().PostDiscordMessage(message: $"{SteamClient.Name} has closed their lobby.", embed: new DiscordEmbed
             {
-                DiscordHook.Instance.PostDiscordMessage(message: "The Lobby has taken a wild turn into CrashMania!", embed: new DiscordEmbed
-                {
-                    Description = "The Lobby has taken a wild turn into CrashMania!",
-                    Color = 16711680,
-                });
-            }
-        }
-    }
-
-
-    [HarmonyPatch(typeof(SteamManager), "LeaveLobby")]
-    public class OnLeaveLobby
-    {
-        private static void Postfix()
-        {
-            if (SteamClient.Name == SharedData.owner.Name) 
-            {
-                DiscordHook.Instance.PostDiscordMessage(message: $"{SteamClient.Name} has closed their lobby.", embed: new DiscordEmbed
-                {
-                    Description = $"{SteamClient.Name} has closed their lobby.",
-                    Color = 16711680,
-                });
-                SharedData.lobbyClosed = true;
-                return;
-            }
-            DiscordHook.Instance.PostDiscordMessage(message: $"{SteamClient.Name} has left {SharedData.owner.Name}'s Lobby.", embed: new DiscordEmbed
-            {
-                Description = $"{SteamClient.Name} has left {SharedData.owner.Name}'s Lobby.",
+                Description = $"{SteamClient.Name} has closed their lobby.",
                 Color = 16711680,
             });
+            lobbyClosed = true;
+            return;
         }
+        new DiscordMessage().PostDiscordMessage(message: $"{SteamClient.Name} has left {owner.Name}'s Lobby.", embed: new DiscordEmbed
+        {
+            Description = $"{SteamClient.Name} has left {owner.Name}'s Lobby.",
+            Color = 16711680,
+        });
     }
 
-    [HarmonyPatch(typeof(SteamManager), "OnLobbyEntered")]
-    public class OnJoinLobby
+    [HarmonyPostfix]
+    [HarmonyPatch("OnLobbyEntered")]
+    public static void OnJoinLobby(Lobby _lobby)
     {
-        private static void Postfix()
+        if (_lobby.Owner.Name == SteamClient.Name) return;
+        new DiscordMessage().PostDiscordMessage(message: $"{SteamClient.Name} has joined {_lobby.Owner.Name}'s lobby.", embed: new DiscordEmbed
         {
-            DiscordHook.Instance.PostDiscordMessage(message: $"{SteamClient.Name} has joined their lobby.", embed: new DiscordEmbed
-            {
-                Description = $"{SteamClient.Name} has joined their lobby.",
-                Color = 65280,
-            });
-        }
+            Description = $"{SteamClient.Name} has joined {_lobby.Owner.Name}'s lobby.",
+            Color = 65280,
+        });
     }
 
-    [HarmonyPatch(typeof(SteamManager), "HostLobby")]
-    public class OnHostLobby
+    [HarmonyPostfix]
+    [HarmonyPatch("HostLobby")]
+    public static void OnHostLobby()
     {
-        private static void Postfix()
+        new DiscordMessage().PostDiscordMessage(message: $"{SteamClient.Name} is now hosting a lobby, please stand by for the invite link....", embed: new DiscordEmbed
         {
-            DiscordHook.Instance.PostDiscordMessage(message: $"{SteamClient.Name} is now hosting a lobby, please stand by for the invite link....", embed: new DiscordEmbed
-            {
-                Description = $"{SteamClient.Name} is now hosting a lobby, please stand by for the invite link....",
-                Color = 65280,
-            });
-        }
+            Description = $"{SteamClient.Name} is now hosting a lobby, please stand by for the invite link....",
+            Color = 65280,
+        });
     }
+
 }
