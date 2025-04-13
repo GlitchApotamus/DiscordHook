@@ -7,7 +7,7 @@
         <AssemblyName>glitchapotamus.discordhook</AssemblyName>
         <Product>DiscordHook</Product>
         <Authors>GlitchApotamus</Authors>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>11</LangVersion>
     </PropertyGroup>
@@ -39,7 +39,7 @@
         <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3"
             PrivateAssets="all" IncludeAssets="build" />
         <PackageReference Include="Linkoid.Repo.Plugin.Build" Version="*" PrivateAssets="all" />
-        <PackageReference Include="Zehs.REPOLib" Version="1.*" />
+        <PackageReference Include="Zehs.REPOLib" Version="2.*" />
         <PackageReference Include="BepInEx.Core" Version="5.*" ExcludeAssets="runtime" />
 
         <PackageReference Include="System.Text.Json" Version="9.0.0" />
