@@ -1,4 +1,4 @@
-# Discord Hook
+# Discord Hook  [![Github All Releases](https://img.shields.io/github/downloads/GlitchApotamus/DiscordHook/total.svg)]()
 
 [![GitHub](https://img.shields.io/badge/GitHub-DiscordHook-brightgreen?style=for-the-badge&logo=GitHub)](https://github.com/GlitchApotamus/DiscordHook/)
 [![Thunderstore Version](https://img.shields.io/thunderstore/v/GlitchApotamus/DiscordHook?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/repo/p/GlitchApotamus/DiscordHook/)
