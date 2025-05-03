@@ -19,9 +19,6 @@ Set up the config file. You can choose to send the messages as an embed by ticki
 `Webhook url` is required!
 All other settings are optional but do have defaults also and only except string values.
 
-# RepoConfig
-
-If you use RepoConfig mod to set these settings in game, you will only see `Send as embed` due to the lack of `string` support in the mod.
 
 > [!IMPORTANT]
 > If you use a mod manager like Gale, you can change the .cfg settings in the launcher itself.\
